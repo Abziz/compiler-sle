@@ -1,0 +1,8 @@
+Type: INT
+DecList: ID COLON Type
+Type: INT
+DecList: DecList COMMA ID COLON Type
+Type: INT
+DecList: DecList COMMA ID COLON Type
+Declarations: VAR DecList SEMICOLON
+StmtList: 'epsilon'
