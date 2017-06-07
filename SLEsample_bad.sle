@@ -3,7 +3,7 @@ var     a: int,  /* variable definition */
 	b: int,
 	c: int;
 start
-	g <= <= 0;  /* function body */
+	g <= 0;  /* function body */
 	b <= 1;
 	loop a < 1000 do
 		put a;
@@ -11,4 +11,4 @@ start
 		a <= b;
 		b <= c;
 	endl;
-endp
+endp.

@@ -31,6 +31,31 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
+/* "%code requires" blocks.  */
+
+/* Line 1685 of yacc.c  */
+#line 22 "lps.y"
+
+  typedef enum numType { INTEGER , FLOAT } numType;
+  typedef union {
+    int ival;
+    float fval;
+  } number;
+
+  typedef struct node {
+    char id[16];
+    number val;
+    numType type;
+    struct node* next;
+  } node;
+  static node* head = NULL;
+  void insertToSymbolTable(const char * id,numType type);
+  void updateSymbol(char * id, number val);
+
+
+
+/* Line 1685 of yacc.c  */
+#line 59 "lps.tab.h"
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -38,42 +63,57 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     START = 258,
-     DO = 259,
-     ELSE = 260,
-     IF = 261,
-     ENDI = 262,
-     INT = 263,
-     PUT = 264,
-     PROG = 265,
-     GET = 266,
-     REAL = 267,
-     THEN = 268,
-     VAR = 269,
-     LOOP = 270,
-     ENDL = 271,
-     UNTIL = 272,
-     ENDP = 273,
-     DOT = 274,
-     SEMICOLON = 275,
-     COLON = 276,
-     COMMA = 277,
-     RPAR = 278,
-     LPAR = 279,
-     ID = 280,
-     NUM = 281,
-     RELOP = 282,
-     LOGOP = 283,
-     ADDOP = 284,
-     MULOP = 285,
-     ASSIGNOP = 286
+     ID = 258,
+     NUM = 259,
+     MULOP = 260,
+     ADDOP = 261,
+     START = 262,
+     DO = 263,
+     ELSE = 264,
+     IF = 265,
+     ENDI = 266,
+     INT = 267,
+     PUT = 268,
+     PROG = 269,
+     GET = 270,
+     REAL = 271,
+     THEN = 272,
+     VAR = 273,
+     LOOP = 274,
+     ENDL = 275,
+     UNTIL = 276,
+     ENDP = 277,
+     DOT = 278,
+     SEMICOL = 279,
+     COL = 280,
+     COMMA = 281,
+     LPAR = 282,
+     RPAR = 283,
+     LOGOP = 284,
+     ASSIGNOP = 285,
+     RELOP = 286
    };
 #endif
 
 
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+typedef union YYSTYPE
+{
+
+/* Line 1685 of yacc.c  */
+#line 41 "lps.y"
+
+  char id[16];
+  char opr;
+  numType type;
+  number num;
+
+
+
+/* Line 1685 of yacc.c  */
+#line 116 "lps.tab.h"
+} YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
@@ -81,18 +121,4 @@ typedef int YYSTYPE;
 
 extern YYSTYPE yylval;
 
-#if ! defined YYLTYPE && ! defined YYLTYPE_IS_DECLARED
-typedef struct YYLTYPE
-{
-  int first_line;
-  int first_column;
-  int last_line;
-  int last_column;
-} YYLTYPE;
-# define yyltype YYLTYPE /* obsolescent; will be withdrawn */
-# define YYLTYPE_IS_DECLARED 1
-# define YYLTYPE_IS_TRIVIAL 1
-#endif
-
-extern YYLTYPE yylloc;
 

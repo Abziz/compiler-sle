@@ -1,14 +1,16 @@
 all:
 	$(MAKE) lps
 	$(MAKE) lex
-	gcc analyzer/lps.tab.c analyzer/lex.yy.c  analyzer/main.c -o lps
+	gcc compiler/lps.tab.c compiler/lex.yy.c compiler/main.c  -o si
 lps:
-	bison -d analyzer/lps.y
-	mv lps.tab.* analyzer/
-
+	bison -d lps.y
+	mv lps.tab.* compiler/
 lex:
-	flex analyzer/sle_la.l
-	mv lex.yy.c analyzer/
+	flex sle.l
+	mv lex.yy.c compiler/
 run:
-	echo `./lps SLEsample_bad.sle `
-	
+	echo `./si SLEsample_bad.sle `
+clean:
+	rm compiler/lex.yy.c
+	rm compiler/lps.tab.*
+	rm si.exe
