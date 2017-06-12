@@ -1,15 +1,14 @@
-1	prog fibonacci;  
+prog fibonacci;  
 2	var     a: int,  
-3		b: int,
+3		b: real,
 4		c: int;
 5	start
-6		g <= 0;  
-7		b <= 1;
-8		loop a < 1000 do
-9			put a;
-10			c <= a+b;
-11			a <= b;
-12			b <= c;
-13		endl;
-14	endp.
-15	
+6		a <= 5;  
+7		b <=1++5;
+8		put a;
+9		put b;
+10		c <= a+b;
+11		a <= b;
+12		b <= c;
+13	endp.
+14	

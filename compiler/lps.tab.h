@@ -34,28 +34,38 @@
 /* "%code requires" blocks.  */
 
 /* Line 1685 of yacc.c  */
-#line 22 "lps.y"
+#line 20 "lps.y"
 
-  typedef enum numType { INTEGER , FLOAT } numType;
-  typedef union {
+  #include <stdlib.h>
+  typedef enum { INTEGER , FLOAT } Type;
+
+  typedef struct {
     int ival;
     float fval;
+    Type type;
   } number;
+
 
   typedef struct node {
     char id[16];
-    number val;
-    numType type;
+    number num;
     struct node* next;
   } node;
-  static node* head = NULL;
-  void insertToSymbolTable(const char * id,numType type);
-  void updateSymbol(char * id, number val);
+
+
+  void insertToSymbolTable(const char * id,number num);
+  node * findById(node * head ,const char* id);
+  void updateSymbol(const char * id, number rhs);
+  void printAll(node* list);
+  number GetValueFromSymbol(const char* id);
+  number operatorMUL(number lhs, char opr,number rhs);
+  number operatorADD(number lhs, char opr,number rhs);
+  void feedback(const char * tok,const char * rule);
 
 
 
 /* Line 1685 of yacc.c  */
-#line 59 "lps.tab.h"
+#line 69 "lps.tab.h"
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -102,17 +112,16 @@ typedef union YYSTYPE
 {
 
 /* Line 1685 of yacc.c  */
-#line 41 "lps.y"
+#line 49 "lps.y"
 
   char id[16];
   char opr;
-  numType type;
   number num;
 
 
 
 /* Line 1685 of yacc.c  */
-#line 116 "lps.tab.h"
+#line 125 "lps.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

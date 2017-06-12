@@ -7,11 +7,10 @@ int lineCounter = 1;
 %}
 
 LETTER	[a-zA-Z]
-DIGIT	[0-9]
-ID		{LETTER}({LETTER}|{DIGIT})*
-NUMF {DIGIT}*.{DIGIT}+
-NUMI {DIGIT}+
-WS		[ \t]+
+DIGIT		[0-9]
+ID			{LETTER}({LETTER}|{DIGIT})*
+NUM 		{DIGIT}*("."?){DIGIT}
+WS			[ \t]+
 
 %x comment
 %%
@@ -36,7 +35,7 @@ loop	{ECHO; return LOOP;}
 endl	{ECHO; return ENDL;}
 until	{ECHO; return UNTIL;}
 endp	{ECHO; return ENDP;}
-mod		{ECHO;  yylval.opr = '%'; return MULOP;}
+mod		{ECHO;  yylval.opr = '%';  return MULOP;}
 
 "."		{ECHO; return DOT;}
 ";"		{ECHO; return SEMICOL;}
@@ -47,8 +46,16 @@ mod		{ECHO;  yylval.opr = '%'; return MULOP;}
 
 {ID}	{ECHO; strcpy(yylval.id,yytext); return ID;}
 
-{NUMF}	{ECHO; yylval.num.fval = atof(yytext); yylval.type = FLOAT; return NUM;}
-{NUMI}  {ECHO; yylval.num.fval = atof(yytext); yylval.type = INTEGER; return NUM;}
+{NUM}	{ ECHO;
+				if(strchr(yytext,'.')){
+					yylval.num.fval = atof(yytext);
+					yylval.num.type = FLOAT;
+				}else{
+					yylval.num.ival = atoi(yytext);
+					yylval.num.type = INTEGER;
+				}
+				return NUM;
+			}
 "<"			{ECHO; return RELOP;}
 ">"			{ECHO; return RELOP;}
 "<>"		{ECHO; return RELOP;}
@@ -56,7 +63,6 @@ mod		{ECHO;  yylval.opr = '%'; return MULOP;}
 
 "&"		{ECHO; return LOGOP;}
 "~"		{ECHO; return LOGOP;}
-"!"		{ECHO; return LOGOP;}
 
 "+"		{ECHO; yylval.opr = *yytext; return ADDOP;}
 "-"		{ECHO; yylval.opr = *yytext; return ADDOP;}

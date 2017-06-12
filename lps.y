@@ -9,10 +9,8 @@ extern int lineCounter;
 extern char* yytext;
 FILE * stxFile;
 
-int yyerror(char* s){
-        fprintf(stxFile, "\nparse error at:\"%s\" ,at line %d\n", yytext, lineCounter);
-        fprintf(stderr, "parse error at:\"%s\" ,at line %d\n", yytext, lineCounter);
-        //exit(1);
+void yyerror(char* s){
+        fprintf(stderr, "%s ,at line %d\n", s, lineCounter);
 }
 
 int yylex();
@@ -20,28 +18,37 @@ int yylex();
 %}
 
 %code requires {
-  typedef enum numType { INTEGER , FLOAT } numType;
-  typedef union {
+  #include <stdlib.h>
+  typedef enum { INTEGER , FLOAT } Type;
+
+  typedef struct {
     int ival;
     float fval;
+    Type type;
   } number;
+
 
   typedef struct node {
     char id[16];
-    number val;
-    numType type;
+    number num;
     struct node* next;
   } node;
-  static node* head = NULL;
-  void insertToSymbolTable(const char * id,numType type);
-  void updateSymbol(char * id, number val);
+
+
+  void insertToSymbolTable(const char * id,number num);
+  node * findById(node * head ,const char* id);
+  void updateSymbol(const char * id, number rhs);
+  void printAll(node* list);
+  number GetValueFromSymbol(const char* id);
+  number operatorMUL(number lhs, char opr,number rhs);
+  number operatorADD(number lhs, char opr,number rhs);
+  void feedback(const char * tok,const char * rule);
 }
 
 
 %union {
   char id[16];
   char opr;
-  numType type;
   number num;
 };
 
@@ -49,7 +56,7 @@ int yylex();
 %token <num> NUM
 %left <opr> ADDOP MULOP
 
-%type <type> Type
+%type <num> Type
 %type <num> Expression
 %type <num> Term
 %type <num> Factor
@@ -60,42 +67,55 @@ int yylex();
 %token DOT SEMICOL COL COMMA LPAR RPAR
 %left RELOP ASSIGNOP LOGOP
 %%
-Program: PROG ID SEMICOL Declarations START StmtList ENDP DOT
+Program: PROG ID SEMICOL Declarations START StmtList ENDP DOT { number progname; insertToSymbolTable($2,progname); }
+      | PROG ID SEMICOL Declarations START StmtList ENDP error { yyerror("Missing '.' at end of program.");}
+      | PROG ID SEMICOL Declarations START StmtList error  { yyerror("Missing 'endp' at end of program.");}
+      | PROG ID SEMICOL Declarations error { yyerror("undefined reference to 'start'.");}
+      | PROG ID error {yyerror("missing semi colon after program name.");}
+      | PROG error {yyerror("illegal program name.");}
+      | error {yyerror("unexpected token.");}
 ;
 Declarations: VAR DeclList SEMICOL
+      | VAR DeclList error { yyerror("Expected semicolon after declaration.");}
 ;
 DeclList: DeclList COMMA ID COL Type  { insertToSymbolTable($3,$5);}
         | ID COL Type   { insertToSymbolTable($1,$3);}
 ;
-Type: INT   { $$= INTEGER;}
-    | REAL  { $$= FLOAT;}
+Type: INT   { $$.type = INTEGER;}
+    | REAL  { $$.type = FLOAT;}
 ;
 StmtList: StmtList Statement SEMICOL {}
+        | StmtList Statement error { yyerror("Expected semicolon after statement.");}
         | /* empty string */ {}
 ;
 Statement: ID ASSIGNOP Expression   { updateSymbol($1,$3); }
-         | PUT Expression   { fprintf(stxFile, "Statement -> PUT Expression\n");}
-         | GET ID   { fprintf(stxFile, "Statement -> GET ID\n");}
-         | IF BoolExp THEN StmtList ELSE StmtList ENDI
-            { fprintf(stxFile, "Statement -> IF BoolExp THEN StmtList ELSE StmtList ENDI\n");}
-         | IF BoolExp THEN StmtList ENDI    { fprintf(stxFile, "Statement -> IF BoolExp THEN StmtList ENDI\n");}
-         | LOOP BoolExp DO StmtList ENDL    { fprintf(stxFile, "Statement -> LOOP BoolExp DO StmtList ENDL\n");}
-         | DO StmtList UNTIL BoolExp ENDL   { fprintf(stxFile, "Statement -> DO StmtList UNTIL BoolExp ENDL\n");}
+        | ID error {yyerror("Expected symbol '<=' after identifier.");}
+        | PUT Expression   { printExpression($2);}
+        | GET ID   { number one ={1,1,GetValueFromSymbol($2).type}; updateSymbol($2,one);}
+        | GET error {yyerror("expected identifier after 'get'.");}
+        | IF BoolExp THEN StmtList ELSE StmtList ENDI {}
+        | IF BoolExp THEN StmtList ENDI    { }
+        | LOOP BoolExp DO StmtList ENDL    { }
+        | DO StmtList UNTIL BoolExp ENDL   { }
 ;
-BoolExp: Expression Case Expression     { fprintf(stxFile, "BoolExp -> Expression Case Expression\n");}
+BoolExp: Expression Case Expression     { }
 ;
-Case: RELOP     { fprintf(stxFile, "Case -> RELOP\n");}
-    | LOGOP     { fprintf(stxFile, "Case -> LOGOP\n");}
+Case: RELOP     { }
+    | LOGOP     { }
 ;
-Expression: Expression ADDOP Term   { fprintf(stxFile, "Expression -> Expression ADDOP Term\n");}
-          | Term    { fprintf(stxFile, "Expression -> Term\n");}
+Expression: Expression ADDOP Term   { $$=operatorADD($1,$2,$3);}
+      | Expression error {yyerror("Expected '+' or '-' after expression.");}
+      | Term    { $$=$1;}
 ;
-Term: Term MULOP Factor     { fprintf(stxFile, "Term -> Term MULOP Factor\n");}
-    | Factor    { fprintf(stxFile, "Term -> Factor\n");}
+Term: Term MULOP Factor     {$$ = operatorMUL($1,$2,$3); }
+    | Term error {yyerror("Expected '*','\' or 'mod' after term.");}
+    | Factor    { $$ = $1;}
 ;
-Factor: ID  { fprintf(stxFile, "Factor -> ID\n");}
-      | NUM     { fprintf(stxFile, "Factor -> NUM\n");}
-      | RPAR Expression LPAR    { fprintf(stxFile, "Factor -> RPAR Expression LPAR\n");}
+Factor: ID  { $$ = GetValueFromSymbol($1);}
+      | NUM  {$$ = $1;}
+      | RPAR Expression LPAR    { $$ = $2;}
+      | RPAR Expression error {yyerror("missing closing parenthesis.");}
+      | error {yyerror("Expected an identifier or a number.");}
 ;
 
 %%

@@ -1,14 +1,13 @@
 prog fibonacci;  /* fibonacci function */
 var     a: int,  /* variable definition */
-	b: int,
+	b: real,
 	c: int;
 start
-	g <= 0;  /* function body */
-	b <= 1;
-	loop a < 1000 do
-		put a;
-		c <= a+b;
-		a <= b;
-		b <= c;
-	endl;
+	a <= 5;  /* function body */
+	b <=1++5;
+	put a;
+	put b;
+	c <= a+b;
+	a <= b;
+	b <= c;
 endp.
