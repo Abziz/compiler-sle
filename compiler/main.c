@@ -4,17 +4,20 @@
 #include <string.h>
 #include "lps.tab.h"
 
-extern FILE *yyout,*yyin,*stxFile;
+extern FILE *yyout,*yyin;
 static node* head = NULL;
-
+static undefined* errors =NULL;
 extern int lineCounter;
 const char * src;
 int yyparse();
+//functions declarations
+node * findById(node * head ,const char* id);
+undefined* findError(const char* id);
 
 int main(int argc, char** argv){
   src = argv[1];
   char lst[20] = "";
-  char stx[20] = "";
+
   // project and input
   if(argc >= 2){
     if(strchr(argv[1],'.') != NULL){ // makesure file has an extension
@@ -37,10 +40,8 @@ int main(int argc, char** argv){
     char* fileName = strtok(argv[1], ".");
     strcat(lst, fileName);
     strcat(lst, ".lst");
-    strcat(stx, fileName);
-    strcat(stx, ".stx");
     //yyout for lst and FILE* stx for stx.
-    if(!(yyout = fopen(lst,"w")) || !(stxFile = fopen(stx, "w"))){
+    if(!(yyout = fopen(lst,"w"))){
       perror("Error openning file");
     }
     /* shits going down here */
@@ -50,16 +51,22 @@ int main(int argc, char** argv){
     }else{
       fprintf(stdout,"parse was successful\n");
     }
-    /* end shit*/
-    fclose(stxFile);
-    //		fclose(yyin);
-    //		fclose(yyout);
   }else{
     perror("arguments not valid");
   }
   return 0;
 }
 
+undefined* findError(const char* id){
+  undefined* temp = errors;
+  while(temp){
+    if(!strcmp(id,temp->id)){
+      break;
+    }
+    temp = temp->next;
+  }
+  return temp;
+}
 void printExpression(number num){
   switch(num.type){
     case INTEGER:
@@ -68,14 +75,17 @@ void printExpression(number num){
     case FLOAT:
     printf("%f\n",num.fval);
     return;
+    case ERROR:
+    return;
   }
 }
-
-
 void insertToSymbolTable(const char * id,number num){
   node* test = findById(head,id);
   if( test != NULL){
-    fprintf(stderr, "Symbol %s allready defined.\n",id);
+    if(test->visited == FALSE){
+      fprintf(stderr, "Symbol %s allready defined.\n",id);
+      test->visited = TRUE;
+    }
     return;
   }
   node * elem = (node*)malloc(1*sizeof(node));
@@ -85,10 +95,10 @@ void insertToSymbolTable(const char * id,number num){
   }
   strcpy(elem->id, id);
   elem->num.type = num.type;
+  elem->visited= FALSE;
   elem->next = head;
   head = elem;
 }
-
 node * findById(node * list,const char* id){
   node * temp = list;
   while( temp ){
@@ -99,11 +109,17 @@ node * findById(node * list,const char* id){
   }
   return temp;
 }
-
 void updateSymbol(const char * id, number rhs){
   node* elem = findById(head,id);
   if( !elem ){
-    fprintf(stderr, "Symbol %s could not be resolved.\n",id );
+    undefined * error = findError(id);
+    if(!error){
+      undefined * new_error = (undefined*)malloc(sizeof(undefined));
+      strcpy(new_error->id,id);
+      new_error->next = errors;
+      errors = new_error;
+      fprintf(stderr, "Symbol %s could not be resolved.\n",id );
+    }
     return;
   }
   if(elem->num.type == FLOAT){
@@ -113,23 +129,23 @@ void updateSymbol(const char * id, number rhs){
   }
   return;
 }
-
-void printAll(node* list){
-  while( list ){
-    list = list->next;
-  }
-}
-
 number GetValueFromSymbol(const char* id){
   node* temp = findById(head,id);
-  if( temp != NULL ){
-    return temp->num;
+  if( !temp){
+    undefined * error = findError(id);
+    if(!error){
+      undefined * new_error = (undefined*)malloc(sizeof(undefined));
+      strcpy(new_error->id,id);
+      new_error->next = errors;
+      errors = new_error;
+      fprintf(stderr, "Symbol %s could not be resolved.\n",id );
+    }
+    number Nan;
+    Nan.type = ERROR;
+    return Nan;
   }
-  fprintf(stderr,"Symbol %s could not be resolved.\n",id);
-  number error;
-  return error;
+  return temp->num;
 }
-
 number operatorADD(number lhs, char opr,number rhs){
   number ans;
   ans.ival = 0;
@@ -148,7 +164,6 @@ number operatorADD(number lhs, char opr,number rhs){
 
   return ans;
 }
-
 number operatorMUL(number lhs, char opr,number rhs){
   number ans;
 

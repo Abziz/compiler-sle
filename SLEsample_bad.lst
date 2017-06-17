@@ -1,14 +1,16 @@
-prog fibonacci;  
-2	var     a: int,  
-3		b: real,
-4		c: int;
-5	start
-6		a <= 5;  
-7		b <=1++5;
-8		put a;
-9		put b;
-10		c <= a+b;
-11		a <= b;
-12		b <= c;
-13	endp.
-14	
+prog fibonacci;
+2	var     a: int,
+3					a: real,
+4					b: int,
+5					a: real;
+6
+7	start
+8		a <= 1;
+9		b <=2/(a-a);
+10		put a;
+11		put b;
+12		c <= a+b;
+13		a <= b;
+14		b <= c;
+15	endp.
+16

@@ -37,7 +37,9 @@
 #line 20 "lps.y"
 
   #include <stdlib.h>
-  typedef enum { INTEGER , FLOAT } Type;
+  typedef enum { TRUE =1 ,FALSE=0} bool;
+  typedef enum { INTEGER , FLOAT ,ERROR} Type;
+
 
   typedef struct {
     int ival;
@@ -49,23 +51,26 @@
   typedef struct node {
     char id[16];
     number num;
+    bool visited;
     struct node* next;
   } node;
 
+  typedef struct undefined{
+    char id[16];
+    struct undefined* next;
+  } undefined;
 
   void insertToSymbolTable(const char * id,number num);
-  node * findById(node * head ,const char* id);
   void updateSymbol(const char * id, number rhs);
-  void printAll(node* list);
   number GetValueFromSymbol(const char* id);
   number operatorMUL(number lhs, char opr,number rhs);
   number operatorADD(number lhs, char opr,number rhs);
-  void feedback(const char * tok,const char * rule);
+  void printExpression(number num);
 
 
 
 /* Line 1685 of yacc.c  */
-#line 69 "lps.tab.h"
+#line 74 "lps.tab.h"
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -112,7 +117,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1685 of yacc.c  */
-#line 49 "lps.y"
+#line 54 "lps.y"
 
   char id[16];
   char opr;
@@ -121,7 +126,7 @@ typedef union YYSTYPE
 
 
 /* Line 1685 of yacc.c  */
-#line 125 "lps.tab.h"
+#line 130 "lps.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

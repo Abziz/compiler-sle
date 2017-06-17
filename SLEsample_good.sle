@@ -1,0 +1,13 @@
+prog fibonacci;  /* fibonacci function */
+var     a: int,
+        b: int,
+				c: real;
+
+start
+	a <= 7;  /* function body */
+	b <=a*(2+3)+4;
+	put a;
+	put b;
+	c <= b mod a;
+	put c;
+endp.

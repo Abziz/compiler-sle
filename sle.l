@@ -41,8 +41,8 @@ mod		{ECHO;  yylval.opr = '%';  return MULOP;}
 ";"		{ECHO; return SEMICOL;}
 ":"		{ECHO; return COL;}
 ","		{ECHO; return COMMA;}
-")"		{ECHO; return LPAR;}
-"("		{ECHO; return RPAR;}
+")"		{ECHO; return RPAR;}
+"("		{ECHO; return LPAR;}
 
 {ID}	{ECHO; strcpy(yylval.id,yytext); return ID;}
 

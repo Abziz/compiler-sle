@@ -7,7 +7,7 @@
 extern FILE *yyout,*yyin;
 extern int lineCounter;
 extern char* yytext;
-FILE * stxFile;
+
 
 void yyerror(char* s){
         fprintf(stderr, "%s ,at line %d\n", s, lineCounter);
@@ -19,7 +19,9 @@ int yylex();
 
 %code requires {
   #include <stdlib.h>
-  typedef enum { INTEGER , FLOAT } Type;
+  typedef enum { TRUE =1 ,FALSE=0} bool;
+  typedef enum { INTEGER , FLOAT ,ERROR} Type;
+
 
   typedef struct {
     int ival;
@@ -31,18 +33,21 @@ int yylex();
   typedef struct node {
     char id[16];
     number num;
+    bool visited;
     struct node* next;
   } node;
 
+  typedef struct undefined{
+    char id[16];
+    struct undefined* next;
+  } undefined;
 
   void insertToSymbolTable(const char * id,number num);
-  node * findById(node * head ,const char* id);
   void updateSymbol(const char * id, number rhs);
-  void printAll(node* list);
   number GetValueFromSymbol(const char* id);
   number operatorMUL(number lhs, char opr,number rhs);
   number operatorADD(number lhs, char opr,number rhs);
-  void feedback(const char * tok,const char * rule);
+  void printExpression(number num);
 }
 
 
@@ -73,10 +78,11 @@ Program: PROG ID SEMICOL Declarations START StmtList ENDP DOT { number progname;
       | PROG ID SEMICOL Declarations error { yyerror("undefined reference to 'start'.");}
       | PROG ID error {yyerror("missing semi colon after program name.");}
       | PROG error {yyerror("illegal program name.");}
-      | error {yyerror("unexpected token.");}
+      | error {yyerror("program must start with token 'prog'.");}
 ;
 Declarations: VAR DeclList SEMICOL
       | VAR DeclList error { yyerror("Expected semicolon after declaration.");}
+      | error { yyerror("token 'var' was expected.");}
 ;
 DeclList: DeclList COMMA ID COL Type  { insertToSymbolTable($3,$5);}
         | ID COL Type   { insertToSymbolTable($1,$3);}
@@ -85,8 +91,8 @@ Type: INT   { $$.type = INTEGER;}
     | REAL  { $$.type = FLOAT;}
 ;
 StmtList: StmtList Statement SEMICOL {}
-        | StmtList Statement error { yyerror("Expected semicolon after statement.");}
-        | /* empty string */ {}
+| StmtList Statement error { yyerror("Expected semicolon after statement.");}
+| /* empty string */ {}
 ;
 Statement: ID ASSIGNOP Expression   { updateSymbol($1,$3); }
         | ID error {yyerror("Expected symbol '<=' after identifier.");}
@@ -113,8 +119,8 @@ Term: Term MULOP Factor     {$$ = operatorMUL($1,$2,$3); }
 ;
 Factor: ID  { $$ = GetValueFromSymbol($1);}
       | NUM  {$$ = $1;}
-      | RPAR Expression LPAR    { $$ = $2;}
-      | RPAR Expression error {yyerror("missing closing parenthesis.");}
+      | LPAR Expression RPAR    { $$ = $2;}
+      | LPAR Expression error {yyerror("missing closing parenthesis.");}
       | error {yyerror("Expected an identifier or a number.");}
 ;
 

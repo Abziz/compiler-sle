@@ -1,11 +1,11 @@
 all:
 	$(MAKE) lps
-	$(MAKE) lex
+	$(MAKE) flex
 	gcc  compiler/lps.tab.* compiler/lex.yy.c compiler/main.c  -o si
 lps:
-	bison -d lps.y
+	bison -d  lps.y
 	mv lps.tab.* compiler/
-lex:
+flex:
 	flex sle.l
 	mv lex.yy.c compiler/
 run:
@@ -14,3 +14,4 @@ clean:
 	rm compiler/lex.yy.c
 	rm compiler/lps.tab.*
 	rm si.exe
+	rm *.lst

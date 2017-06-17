@@ -1,10 +1,12 @@
 prog fibonacci;  /* fibonacci function */
-var     a: int,  /* variable definition */
-	b: real,
-	c: int;
+var     a: int,
+				a: real,
+				b: int,
+				a: real;  /* variable definition */
+
 start
-	a <= 5;  /* function body */
-	b <=1++5;
+	a <= 1;  /* function body */
+	b <=2/(a-a);
 	put a;
 	put b;
 	c <= a+b;
