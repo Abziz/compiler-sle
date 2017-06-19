@@ -1,6 +1,16 @@
 %{
 #include <stdio.h>
-#include "lps.tab.h"
+#include <string.h>
+
+typedef enum { TRUE =1 ,FALSE=0} bool;
+typedef enum { INTEGER , FLOAT ,ERROR} Type;
+typedef struct number {
+  int ival;
+  float fval;
+  Type type;
+} number;
+
+#include "lps_tab.h"
 
 int lineCounter = 1;
 
@@ -41,8 +51,8 @@ mod		{ECHO;  yylval.opr = '%';  return MULOP;}
 ";"		{ECHO; return SEMICOL;}
 ":"		{ECHO; return COL;}
 ","		{ECHO; return COMMA;}
-")"		{ECHO; return RPAR;}
 "("		{ECHO; return LPAR;}
+")"		{ECHO; return RPAR;}
 
 {ID}	{ECHO; strcpy(yylval.id,yytext); return ID;}
 
@@ -56,13 +66,13 @@ mod		{ECHO;  yylval.opr = '%';  return MULOP;}
 				}
 				return NUM;
 			}
-"<"			{ECHO; return RELOP;}
-">"			{ECHO; return RELOP;}
-"<>"		{ECHO; return RELOP;}
-"="			{ECHO; return RELOP;}
+"<"			{ECHO; yylval.opr =*yytext; return RELOP;}
+">"			{ECHO; yylval.opr =*yytext; return RELOP;}
+"<>"		{ECHO; yylval.opr ='!'; return RELOP;}
+"="			{ECHO; yylval.opr =*yytext; return RELOP;}
 
-"&"		{ECHO; return LOGOP;}
-"~"		{ECHO; return LOGOP;}
+"&"		{ECHO; yylval.opr =*yytext; return LOGOP;}
+"~"		{ECHO; yylval.opr =*yytext; return LOGOP;}
 
 "+"		{ECHO; yylval.opr = *yytext; return ADDOP;}
 "-"		{ECHO; yylval.opr = *yytext; return ADDOP;}

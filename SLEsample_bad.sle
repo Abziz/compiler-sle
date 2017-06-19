@@ -1,15 +1,21 @@
 prog fibonacci;  /* fibonacci function */
 var     a: int,
-				a: real,
-				b: int,
-				a: real;  /* variable definition */
+				b: real;  /* variable definition */
 
-start
-	a <= 1;  /* function body */
-	b <=2/(a-a);
-	put a;
+	start
+	a <= 4;  /* function body */
+	b <= 2/(a-a);
+	b <= a+c;
+	b <= 2;
 	put b;
-	c <= a+b;
-	a <= b;
-	b <= c;
+	put a;
+	put c;
+	a <= 0;
+	if a & b then
+		put a;
+		if a~b then
+
+		e
+		endi;
+	endi;
 endp.

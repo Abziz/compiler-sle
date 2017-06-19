@@ -2,7 +2,35 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "lps.tab.h"
+
+typedef enum { TRUE =1 ,FALSE=0} bool;
+typedef enum { INTEGER , FLOAT ,ERROR} Type;
+typedef struct number {
+  int ival;
+  float fval;
+  Type type;
+} number;
+
+#include "lps_tab.h"
+
+typedef struct node {
+  char id[16];
+  number num;
+  bool visited;
+  struct node* next;
+} node;
+
+typedef struct undefined{
+  char id[16];
+  struct undefined* next;
+} undefined;
+
+void insertToSymbolTable(const char * id,number num);
+void updateSymbol(const char * id, number rhs);
+number GetValueFromSymbol(const char* id);
+number operatorMUL(number lhs, char opr,number rhs);
+number operatorADD(number lhs, char opr,number rhs);
+void printExpression(number num);
 
 extern FILE *yyout,*yyin;
 static node* head = NULL;
@@ -10,6 +38,7 @@ static undefined* errors =NULL;
 extern int lineCounter;
 const char * src;
 int yyparse();
+
 //functions declarations
 node * findById(node * head ,const char* id);
 undefined* findError(const char* id);
@@ -203,4 +232,22 @@ number operatorMUL(number lhs, char opr,number rhs){
     break;
   }
   return ans;
+}
+bool evaluate_bool(number lhs, char opr, number rhs){
+  float l = lhs.type == INTEGER? lhs.ival:lhs.fval;
+  float r = rhs.type == INTEGER? rhs.ival:rhs.fval;
+  switch( opr ){
+    case '<':
+    return l<r? TRUE:FALSE;
+    case '>':
+    return l>r? TRUE:FALSE;
+    case '!':
+    return l!=r? TRUE:FALSE;
+    case '=':
+    return l==r? TRUE:FALSE;
+    case '&':
+    return l && r? TRUE:FALSE;
+    case '~':
+    return l || r? TRUE:FALSE;
+  }
 }
